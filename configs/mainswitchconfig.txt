@@ -1,0 +1,319 @@
+=====================================
+SHIELD PROJECT - ESW1 CONFIGURATION
+=====================================
+Device  : ESW1 (Core Layer 3 Switch)
+Role    : Inter-VLAN Routing, ACL, DHCP, NTP, RADIUS
+
+
+
+--- show running-config OUTPUT ---
+
+User Access Verification
+
+Username: admin
+Password:
+
+
+***************************************************************
+This is a normal Router with a SW module inside (NM-16ESW)
+It has been preconfigured with hard coded speed and duplex
+
+To create vlans use the command "vlan database" from exec mode
+After creating all desired vlans use "exit" to apply the config
+
+To view existing vlans use the command "show vlan-switch brief"
+
+Warning: You are using an old IOS image for this router.
+Please update the IOS to enable the "macro" command!
+***************************************************************
+
+
+ESW1# show running-config
+Building configuration...
+
+Current configuration : 5488 bytes
+!
+! No configuration change since last restart
+!
+version 12.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname ESW1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+aaa new-model
+!
+!
+aaa group server radius RADIUS_GROUP
+!
+aaa authentication login default local
+aaa authentication login RADIUS_AUTH group radius local
+aaa authentication dot1x default group radius
+aaa authorization network default group radius local
+!
+aaa session-id common
+memory-size iomem 5
+clock timezone IST 5 30
+no ip icmp rate-limit unreachable
+ip cef
+!
+!
+no ip dhcp use vrf connected
+ip dhcp excluded-address 192.168.10.1
+ip dhcp excluded-address 192.168.20.1
+ip dhcp excluded-address 192.168.30.1
+ip dhcp excluded-address 192.168.40.1
+!
+ip dhcp pool ACADEMIC
+   network 192.168.10.0 255.255.255.0
+   default-router 192.168.10.1
+   dns-server 8.8.8.8
+!
+ip dhcp pool ADMIN
+   network 192.168.20.0 255.255.255.0
+   default-router 192.168.20.1
+   dns-server 8.8.8.8
+!
+ip dhcp pool RESIDENTIAL
+   network 192.168.30.0 255.255.255.0
+   default-router 192.168.30.1
+   dns-server 8.8.8.8
+!
+ip dhcp pool SERVICE
+   network 192.168.40.0 255.255.255.0
+   default-router 192.168.40.1
+   dns-server 8.8.8.8
+!
+!
+no ip domain lookup
+ip domain name campus.local
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+dot1x system-auth-control
+!
+no spanning-tree vlan 1
+no spanning-tree vlan 10
+no spanning-tree vlan 20
+no spanning-tree vlan 30
+no spanning-tree vlan 40
+vtp file nvram:vlan.dat
+
+username admin privilege 15 secret 5 $1$aML2$axNjTu6aHdii/drkw5nNh.
+!
+!
+ip tcp synwait-time 5
+ip ssh version 2
+!
+!
+!
+interface FastEthernet0/0
+ description *** Unused for Layer2 EtherSwitch ***
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+!
+interface FastEthernet0/1
+ description *** Unused for Layer2 EtherSwitch ***
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+!
+interface FastEthernet1/0
+ switchport trunk allowed vlan 1,2,10,20,30,40,1002-1005
+ switchport mode trunk
+ duplex full
+ speed 100
+!
+interface FastEthernet1/1
+ switchport trunk allowed vlan 1,2,10,20,30,40,1002-1005
+ switchport mode trunk
+ duplex full
+ speed 100
+!
+interface FastEthernet1/2
+ no switchport
+ ip address 192.168.1.2 255.255.255.0
+ duplex full
+ speed 100
+!
+interface FastEthernet1/3
+ switchport trunk allowed vlan 1,2,10,20,30,40,1002-1005
+ switchport mode trunk
+ duplex full
+ speed 100
+!
+interface FastEthernet1/4
+ switchport trunk allowed vlan 1,2,10,20,30,40,1002-1005
+ switchport mode trunk
+ duplex full
+ speed 100
+!
+interface FastEthernet1/5
+ switchport mode trunk
+ duplex full
+ speed 100
+!
+interface FastEthernet1/6
+ duplex full
+ speed 100
+!
+interface FastEthernet1/7
+ duplex full
+ speed 100
+!
+interface FastEthernet1/8
+ duplex full
+ speed 100
+!
+interface FastEthernet1/9
+ duplex full
+ speed 100
+!
+interface FastEthernet1/10
+ duplex full
+ speed 100
+!
+interface FastEthernet1/11
+ duplex full
+ speed 100
+!
+interface FastEthernet1/12
+ duplex full
+ speed 100
+!
+interface FastEthernet1/13
+ duplex full
+ speed 100
+!
+interface FastEthernet1/14
+ duplex full
+ speed 100
+!
+interface FastEthernet1/15
+ duplex full
+ speed 100
+!
+interface Vlan1
+ no ip address
+ shutdown
+!
+interface Vlan10
+ ip address 192.168.10.1 255.255.255.0
+!
+interface Vlan20
+ ip address 192.168.20.1 255.255.255.0
+!
+interface Vlan30
+ ip address 192.168.30.1 255.255.255.0
+ ip access-group BLOCK_UNAUTHORIZED in
+!
+interface Vlan40
+ ip address 192.168.40.1 255.255.255.0
+ ip access-group BLOCK_UNAUTHORIZED in
+!
+ip route 0.0.0.0 0.0.0.0 192.168.1.1
+!
+!
+no ip http server
+no ip http secure-server
+!
+ip access-list extended BLOCK_UNAUTHORIZED
+ deny   ip 192.168.30.0 0.0.0.255 192.168.10.0 0.0.0.255
+ deny   ip 192.168.30.0 0.0.0.255 192.168.20.0 0.0.0.255
+ deny   ip 192.168.40.0 0.0.0.255 192.168.10.0 0.0.0.255
+ deny   ip 192.168.40.0 0.0.0.255 192.168.20.0 0.0.0.255
+ permit ip any any
+ip access-list extended ZERO_TRUST
+ permit ip 192.168.10.0 0.0.0.255 any time-range STUDENT_HOURS
+ permit ip 192.168.20.0 0.0.0.255 any time-range ADMIN_HOURS
+ permit ip 192.168.30.0 0.0.0.255 any time-range RESIDENTIAL_HOURS
+ permit ip 192.168.40.0 0.0.0.255 any time-range SERVICE_HOURS
+ deny   ip any any log
+!
+no cdp log mismatch duplex
+!
+!
+radius-server host 192.168.56.129 auth-port 1812 acct-port 1813 key radiussecret
+radius-server host 192.168.1.2 auth-port 1812 acct-port 1646 key testing123
+radius-server host 192.168.56.129 auth-port 1812 acct-port 1646 key testing123
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+!
+banner exec ^C
+
+***************************************************************
+This is a normal Router with a SW module inside (NM-16ESW)
+It has been preconfigured with hard coded speed and duplex
+
+To create vlans use the command "vlan database" from exec mode
+After creating all desired vlans use "exit" to apply the config
+
+To view existing vlans use the command "show vlan-switch brief"
+
+Warning: You are using an old IOS image for this router.
+Please update the IOS to enable the "macro" command!
+***************************************************************
+
+^C
+!
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line aux 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line vty 0 4
+ exec-timeout 5 0
+ transport input ssh
+!
+ntp server 192.168.56.129
+time-range ADMIN_HOURS
+ periodic weekdays 8:00 to 20:00
+!
+time-range RESIDENTIAL_HOURS
+ periodic daily 6:00 to 23:00
+!
+time-range SERVICE_HOURS
+ periodic daily 0:00 to 23:59
+!
+time-range STUDENT_HOURS
+ periodic weekdays 8:00 to 22:00
+!
+!
+end
+
+
+
+
+
+SHIELD | Payal & Mudit | NSUT IT | April 2026

@@ -1,0 +1,99 @@
+==================================================
+SHIELD PROJECT - FREERADIUS SERVER CONFIGURATION
+==================================================
+Device  : FreeRADIUS Server
+OS      : Ubuntu 24.04 LTS (VMware)
+IP      : 192.168.56.129
+Role    : Centralized AAA + NTP Server
+
+
+
+--- USERS FILE ---
+sudo nano /etc/freeradius/3.0/users
+
+student1        Cleartext-Password := "Student@123"
+                Tunnel-Type = VLAN,
+                Tunnel-Medium-Type = IEEE-802,
+                Tunnel-Private-Group-Id = "10"
+
+faculty1        Cleartext-Password := "Faculty@123"
+                Tunnel-Type = VLAN,
+                Tunnel-Medium-Type = IEEE-802,
+                Tunnel-Private-Group-Id = "10"
+
+admin1          Cleartext-Password := "Admin@123"
+                Tunnel-Type = VLAN,
+                Tunnel-Medium-Type = IEEE-802,
+                Tunnel-Private-Group-Id = "20"
+
+tnp1            Cleartext-Password := "Tnp@123"
+                Tunnel-Type = VLAN,
+                Tunnel-Medium-Type = IEEE-802,
+                Tunnel-Private-Group-Id = "20"
+
+residential1    Cleartext-Password := "Resident@123"
+                Tunnel-Type = VLAN,
+                Tunnel-Medium-Type = IEEE-802,
+                Tunnel-Private-Group-Id = "30"
+
+guest1          Cleartext-Password := "Guest@123"
+                Tunnel-Type = VLAN,
+                Tunnel-Medium-Type = IEEE-802,
+                Tunnel-Private-Group-Id = "40"
+
+
+--- CLIENTS.CONF FILE ---
+--- RADIUSD.CONF (BlastRADIUS Fix) ---
+(/etc/freeradius/3.0/radiusd.conf)
+# -*- text -*-
+# clients.conf -- client configuration directives
+
+#######################################################################
+# Define RADIUS clients (NAS, Access Point, etc.)
+#######################################################################
+
+client localhost {
+    ipaddr = 127.0.0.1
+    proto = *
+
+    # Shared secret (change in production)
+    secret = testing123
+
+    nas_type = other
+
+    limit {
+        max_connections = 16
+        lifetime = 0
+        idle_timeout = 30
+    }
+}
+
+# IPv6 Client
+client localhost_ipv6 {
+    ipv6addr = ::1
+    secret   = testing123
+}
+
+#######################################################################
+# Custom Clients
+#######################################################################
+
+client 192.168.56.1 {
+    secret    = radiussecret
+    shortname = R1
+}
+
+client 192.168.1.2 {
+    secret    = radiussecret
+    shortname = ESW1
+
+    require_message_authenticator = yes
+}
+
+
+
+
+
+
+
+SHIELD | Payal & Mudit | NSUT IT | April 2026
