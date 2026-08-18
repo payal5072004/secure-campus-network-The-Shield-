@@ -1,0 +1,231 @@
+=========================================
+SHIELD PROJECT - R1 ROUTER CONFIGURATION
+=========================================
+Device  : R1 (Core Router)
+Model   : Cisco c7200
+Role    : External connectivity + RADIUS client
+===============================================
+
+
+--- show running-config OUTPUT ---
+
+Username: admin
+Password:Admin@123
+
+R1# show running-config
+Building configuration...
+
+Current configuration : 3673 bytes
+!
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+!
+hostname R1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+aaa new-model
+!
+!
+aaa group server radius RADIUS_GROUP
+ server name FREERADIUS
+!
+aaa authentication login default local
+aaa authentication login RADIUS_AUTH group RADIUS_GROUP local
+aaa authorization network default group RADIUS_GROUP local
+!
+!
+!
+!
+!
+aaa session-id common
+no ip icmp rate-limit unreachable
+ip cef
+!
+!
+!
+ip dhcp excluded-address 192.168.10.1 192.168.10.10
+ip dhcp excluded-address 192.168.20.1 192.168.20.10
+ip dhcp excluded-address 192.168.30.1 192.168.30.10
+ip dhcp excluded-address 192.168.40.1 192.168.40.10
+!
+ip dhcp pool ACADEMIC
+ network 192.168.10.0 255.255.255.0
+ default-router 192.168.10.1
+ dns-server 8.8.8.8
+!
+ip dhcp pool ADMIN
+ network 192.168.20.0 255.255.255.0
+ default-router 192.168.20.1
+ dns-server 8.8.8.8
+!
+ip dhcp pool RESIDENTIAL
+ network 192.168.30.0 255.255.255.0
+ default-router 192.168.30.1
+ dns-server 8.8.8.8
+!
+ip dhcp pool SERVICE
+ network 192.168.40.0 255.255.255.0
+ default-router 192.168.40.1
+ dns-server 8.8.8.8
+!
+!
+!
+no ip domain lookup
+ip domain name campus.local
+no ipv6 cef
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+username admin privilege 15 secret 5 $1$E95N$/7LfW85Id80JhYeFSnTFM1
+!
+!
+ip tcp synwait-time 5
+ip ssh version 2
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface FastEthernet0/0
+ ip address 192.168.1.1 255.255.255.0
+ ip access-group BLOCK_UNAUTHORIZED in
+ ip helper-address 192.168.10.1
+ ip helper-address 192.168.20.1
+ ip helper-address 192.168.30.1
+ ip helper-address 192.168.40.1
+ ip nat inside
+ speed auto
+ duplex auto
+!
+interface FastEthernet0/1
+ ip address 192.168.56.100 255.255.255.0
+ ip nat outside
+ speed auto
+ duplex auto
+!
+interface Serial1/0
+ no ip address
+ shutdown
+ serial restart-delay 0
+!
+interface Serial1/1
+ no ip address
+ shutdown
+ serial restart-delay 0
+!
+interface Serial1/2
+ no ip address
+ shutdown
+ serial restart-delay 0
+!
+interface Serial1/3
+ no ip address
+ shutdown
+ serial restart-delay 0
+!
+interface Serial1/4
+ no ip address
+ shutdown
+ serial restart-delay 0
+!
+interface Serial1/5
+ no ip address
+ shutdown
+ serial restart-delay 0
+!
+interface Serial1/6
+ no ip address
+ shutdown
+ serial restart-delay 0
+!
+interface Serial1/7
+ no ip address
+ shutdown
+ serial restart-delay 0
+!
+interface FastEthernet2/0
+ no ip address
+ shutdown
+ speed auto
+ duplex auto
+!
+interface FastEthernet2/1
+ no ip address
+ shutdown
+ speed auto
+ duplex auto
+!
+ip nat inside source list 1 interface FastEthernet0/1 overload
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip route 0.0.0.0 0.0.0.0 FastEthernet0/1
+ip route 192.168.10.0 255.255.255.0 192.168.1.2
+ip route 192.168.20.0 255.255.255.0 192.168.1.2
+ip route 192.168.30.0 255.255.255.0 192.168.1.2
+ip route 192.168.40.0 255.255.255.0 192.168.1.2
+!
+ip access-list extended BLOCK_UNAUTHORIZED
+ deny   ip 192.168.30.0 0.0.0.255 192.168.10.0 0.0.0.255
+ deny   ip 192.168.30.0 0.0.0.255 192.168.20.0 0.0.0.255
+ deny   ip 192.168.40.0 0.0.0.255 192.168.10.0 0.0.0.255
+ deny   ip 192.168.40.0 0.0.0.255 192.168.20.0 0.0.0.255
+ permit ip any any
+!
+access-list 1 permit 192.168.10.0 0.0.0.255
+access-list 1 permit 192.168.20.0 0.0.0.255
+access-list 1 permit 192.168.30.0 0.0.0.255
+access-list 1 permit 192.168.40.0 0.0.0.255
+!
+!
+!
+radius server FREERADIUS
+ address ipv4 192.168.56.129 auth-port 1812 acct-port 1813
+ key radiussecret
+!
+!
+control-plane
+!
+!
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+ stopbits 1
+line aux 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+ stopbits 1
+line vty 0 4
+ exec-timeout 5 0
+ transport input ssh
+!
+!
+end
+
+
+
+
+SHIELD | Payal & Mudit | NSUT IT | April 2026
