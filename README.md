@@ -1,5 +1,5 @@
 # secure-campus-network-The-Shield-
-Secure Campus Network using Dynamic VLAN and RADIUS Authentication
+Secure Campus Network using Dynamic VLAN and RADIUS Authentication for security
 
         SHIELD PROJECT REPORT
        
